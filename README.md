@@ -95,6 +95,24 @@ The test (`test/test.cc`) checks that known errnos resolve to their names, that 
 - The table is sized to at least 256 entries, growing if any defined errno value is larger (`error.hh:39`).
 - `description()` strings come from `strerror_r` and so follow the libc's locale at the time the table is first built.
 
+## Examples
+
+[`examples/demo.cc`](examples/demo.cc) is a runnable tour. A top-level CMake build
+produces it next to the test:
+
+```sh
+cmake -B build && cmake --build build && ./build/errno_names_demo
+```
+
+It looks up a handful of common errnos (`EAGAIN`, `ENOENT`, `EINVAL`, ...) to
+both their symbolic name and their description, contrasts the stable name against
+the localized `strerror_r` description, then sweeps the integer range and prints
+every errno this platform actually compiled in (value -> name -> description),
+which is the set you get from the `#ifdef`-guarded list in `errnos.h`. It closes
+on the graceful fallback for an unknown value (`"UNKNOWN"` / `"Unknown error"`,
+no throw) and the readable syscall-failure log line the library exists to
+produce, by actually failing an `fopen` and printing `name (description)`.
+
 ## Provenance
 
 Extracted from [Xapiand](https://github.com/Kronuz/Xapiand), where it makes I/O error logs readable by printing the errno symbol alongside the description.

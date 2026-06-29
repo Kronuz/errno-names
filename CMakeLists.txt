@@ -12,4 +12,8 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   add_executable(errno_names_test test/test.cc)
   target_link_libraries(errno_names_test PRIVATE errno_names)
   add_test(NAME errno_names COMMAND errno_names_test)
+
+  # A runnable tour of the library (not a test): build & run ./build/errno_names_demo
+  add_executable(errno_names_demo examples/demo.cc)
+  target_link_libraries(errno_names_demo PRIVATE errno_names)
 endif()
