@@ -1,5 +1,7 @@
 # errno-names
 
+[![CI](https://github.com/Kronuz/errno-names/actions/workflows/ci.yml/badge.svg)](https://github.com/Kronuz/errno-names/actions/workflows/ci.yml)
+
 Map an `errno` value to its symbolic name (`"EAGAIN"`, `"ENOENT"`, ...) and to its human description, across Linux, macOS, and BSD.
 
 ## What it is
