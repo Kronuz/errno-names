@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.14)
 project(errno_names LANGUAGES CXX)
 
 add_library(errno_names INTERFACE)
+add_library(errno_names::errno_names ALIAS errno_names)
 target_include_directories(errno_names INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_features(errno_names INTERFACE cxx_std_17)
 

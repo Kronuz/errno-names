@@ -8,7 +8,7 @@ Guidance for agents (and humans) working in this repo. It is small: two header f
 - `errnos.h` — the canonical errno list. Pure X-macro list of `#ifdef Exxx __ERRNO(Exxx) #endif` lines. Defines no logic; included multiple times by `error.hh` with different `__ERRNO` definitions.
 - `test/test.cc` — smoke test.
 - `CMakeLists.txt` — declares the `errno_names` INTERFACE target and the `errno_names_test` test target.
-- `README.md`, `ARCHITECTURE.md` — docs.
+- `README.md` — what it is, install, quick start; `docs/API.md` — the API reference and caveats; `ARCHITECTURE.md` — the design.
 
 ## Build & run the test
 
@@ -32,7 +32,7 @@ A passing run prints `errno-names OK: EINVAL = EINVAL (Invalid argument)`.
 - The `__ERRNO` contract. `errnos.h` calls a macro named `__ERRNO` that it never defines. Every includer must `#define __ERRNO(...)` before `#include "errnos.h"` and `#undef __ERRNO` after. Do not define `__ERRNO` inside `errnos.h`, and do not leave it defined after a pass.
 - `errnos.h` stays a pure list. No logic, no includes, no state. Only guarded `__ERRNO(...)` lines (plus comments). Anything that needs to vary per use case belongs in `error.hh`, expressed as a different `__ERRNO` definition.
 - Every symbol is guarded by `#ifdef`. This is what makes the list portable: a symbol the platform does not define must compile to nothing.
-- Table sizing happens in the first X-macro pass and must stay a `constexpr` computation, with the 256-entry floor preserved (`error.hh:39`).
+- Table sizing happens in the first X-macro pass and must stay a `constexpr` computation, with the 256-entry floor preserved.
 
 ## How to extend (adding a platform errno)
 

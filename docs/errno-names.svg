@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="592" height="516" viewBox="0 0 592 516">
+<rect width="592" height="516" rx="10" fill="#1f2329"/>
+<circle cx="20" cy="18" r="6" fill="#ff5f57"/><circle cx="40" cy="18" r="6" fill="#febc2e"/><circle cx="60" cy="18" r="6" fill="#28c840"/>
+<text x="296.0" y="22" fill="#8a919c" font-family="Menlo, Consolas, monospace" font-size="12" text-anchor="middle">errno_names_demo</text>
+<g font-family="Menlo, Consolas, DejaVu Sans Mono, monospace" font-size="14" fill="#d8dee9" xml:space="preserve">
+<text x="18.0" y="56" >errno-names demo</text>
+<text x="18.0" y="94" font-weight="bold">── error::name(): an errno integer to its symbolic name ──</text>
+<text x="18.0" y="113" >  35  -&gt; EAGAIN    (Resource temporarily unavailable)</text>
+<text x="18.0" y="132" >  2   -&gt; ENOENT    (No such file or directory)</text>
+<text x="18.0" y="151" >  22  -&gt; EINVAL    (Invalid argument)</text>
+<text x="18.0" y="170" >  13  -&gt; EACCES    (Permission denied)</text>
+<text x="18.0" y="189" >  1   -&gt; EPERM     (Operation not permitted)</text>
+<text x="18.0" y="208" >  12  -&gt; ENOMEM    (Cannot allocate memory)</text>
+<text x="18.0" y="227" >  17  -&gt; EEXIST    (File exists)</text>
+<text x="18.0" y="246" >  9   -&gt; EBADF     (Bad file descriptor)</text>
+<text x="18.0" y="284" font-weight="bold">── name vs. description: one is stable, one is localized ──</text>
+<text x="18.0" y="303" >  EINVAL  name=&quot;EINVAL&quot;   description=&quot;Invalid argument&quot;</text>
+<text x="18.0" y="322" >  ENOENT  name=&quot;ENOENT&quot;   description=&quot;No such file or directory&quot;</text>
+<text x="18.0" y="360" font-weight="bold">── iterate: each defined errno on this platform (value -&gt; name) ──</text>
+<text x="18.0" y="379" >    1 -&gt; EPERM            Operation not permitted</text>
+<text x="18.0" y="398" >    2 -&gt; ENOENT           No such file or directory</text>
+<text x="18.0" y="417" >    3 -&gt; ESRCH            No such process</text>
+<text x="18.0" y="436" >    4 -&gt; EINTR            Interrupted system call</text>
+<text x="18.0" y="455" >    5 -&gt; EIO              Input/output error</text>
+<text x="18.0" y="474" >    6 -&gt; ENXIO            Device not configured</text>
+<text x="18.0" y="493" >    7 -&gt; E2BIG            Argument list too long</text>
+</g></svg>

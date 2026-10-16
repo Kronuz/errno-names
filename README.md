@@ -1,124 +1,85 @@
 # errno-names
 
 [![CI](https://github.com/Kronuz/errno-names/actions/workflows/ci.yml/badge.svg)](https://github.com/Kronuz/errno-names/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+![C++17](https://img.shields.io/badge/C%2B%2B-17-blue.svg)
+![Header-only](https://img.shields.io/badge/header--only-yes-green.svg)
 
-Map an `errno` value to its symbolic name (`"EAGAIN"`, `"ENOENT"`, ...) and to its human description, across Linux, macOS, and BSD.
+Turn an `errno` value into its symbolic name, `EINVAL`, and its description, on
+Linux, macOS, and BSD, in C++17. So a log line reads
+`EINVAL (Invalid argument)` instead of `22`.
 
-## What it is
+![errno-names: the demo's output](docs/errno-names.svg)
 
-The C standard library gives you `strerror` / `strerror_r`, which turn an `errno` value into a human description like `"Invalid argument"`. What it does not give you is the symbolic *name* of the constant, `"EINVAL"`. errno-names fills that gap: a header-only C++17 library that maps an `errno` integer to both its symbolic name and its description. It builds a compile-time list of every errno the platform actually defines, so a log line can read `EINVAL (Invalid argument)` instead of a bare number.
+## ✨ Highlights
 
-## When to use it / when not
+- **The name you grep for.** `error::name(EINVAL)` is `"EINVAL"`, stable across
+  locales and platforms.
+- **The libc's description** through `strerror_r`.
+- **Built for the platform.** Only the errnos the target defines are compiled in.
+- **Never throws.** Unknown values read `"UNKNOWN"` and `"Unknown error"`.
+- **O(1) lookups** from tables built once, on first use.
 
-Use it when you are logging or reporting system-call failures and you want the symbolic name in the output, not just the description or the raw integer. The name is what a developer greps for, what shows up in man pages, and what is stable across locales, so `EINVAL` is more useful in a log than `"Invalid argument"` (which is localized) or `22` (which is platform-dependent).
+## 📦 Installation
 
-Skip it if a bare `strerror` description is enough for your audience, or if you are not in a position to add a header to the build. It is a small convenience, not infrastructure. It is also not a general error-handling framework: it maps `errno` integers to strings and nothing more.
-
-## Install
-
-Header-only. Two files, `error.hh` and `errnos.h`, must sit next to each other (`error.hh` includes `errnos.h` with a relative path). Drop them into your include path and include the one header:
-
-```cpp
-#include "error.hh"
-```
-
-Requires C++17.
-
-### CMake (FetchContent)
-
-The repo ships an `INTERFACE` target named `errno_names`:
+Requires a C++17 compiler; CMake 3.14 or newer for the CMake route. CI builds it
+on Linux (x86_64, arm64), macOS (arm64, x86_64), and FreeBSD, plus ASan, UBSan,
+and TSan builds.
 
 ```cmake
 include(FetchContent)
-FetchContent_Declare(
-  errno_names
+FetchContent_Declare(errno_names
   GIT_REPOSITORY https://github.com/Kronuz/errno-names.git
-  GIT_TAG        main
-)
+  GIT_TAG        main)
 FetchContent_MakeAvailable(errno_names)
 
-target_link_libraries(your_target PRIVATE errno_names)
+target_link_libraries(my_app PRIVATE errno_names::errno_names)
 ```
 
-The target sets `cxx_std_17` and adds the repo root to your include path, so `#include "error.hh"` resolves.
+Or copy `error.hh` and `errnos.h`, side by side, onto your include path.
 
-## Usage
+## 🚀 Quick start
 
 ```cpp
-#include <cerrno>
-#include <cstdio>
 #include "error.hh"
 
+#include <cerrno>
+#include <cstdio>
+
 int main() {
-    // Symbolic name lookup.
-    std::printf("%s\n", error::name(EINVAL).c_str());         // "EINVAL"
-    std::printf("%s\n", error::name(ENOENT).c_str());         // "ENOENT"
-
-    // Description (via strerror_r, so it matches what the libc reports).
-    std::printf("%s\n", error::description(EINVAL).c_str());  // "Invalid argument"
-
-    // Unknown errno: both lookups degrade gracefully instead of throwing.
-    std::printf("%s\n", error::name(-12345).c_str());         // "UNKNOWN"
-    std::printf("%s\n", error::description(99999).c_str());   // "Unknown error"
-
-    // Typical logging shape.
-    int e = errno;  // captured after some failing syscall
-    std::printf("syscall failed: %s (%s)\n",
-                error::name(e).c_str(), error::description(e).c_str());
-    return 0;
+	int e = ENOENT;   // say, from a failed open()
+	std::printf("open failed: %s (%s)\n", error::name(e).c_str(), error::description(e).c_str());
+	// open failed: ENOENT (No such file or directory)
 }
 ```
 
-## API reference
+[`examples/demo.cc`](examples/demo.cc) prints a table of common errnos.
 
-Both functions live in namespace `error` and return a reference to a stable `std::string` (no allocation per call after the first build).
+## 🎯 When to use it
 
-- `error::name(int errnum)` -> the symbolic name, e.g. `"EINVAL"`. Returns `"UNKNOWN"` if `errnum` is out of range or has no symbol in the table. (`error.hh:70`)
-- `error::description(int errnum)` -> the human description, produced via `strerror_r` when the table is built. Returns `"Unknown error"` if `errnum` is out of range or has no entry. (`error.hh:85`)
+- ✅ Logging and reporting system-call failures.
+- ❌ An error-handling framework: it maps integers to strings, nothing more.
 
-Both tables are built once, lazily, on the first call into the library, stored as `std::array<std::string>`, and reused afterward, so lookups are O(1) array indexing (`error.hh:37`).
+## 📚 Documentation
 
-## Build & test
+- [docs/API.md](docs/API.md): `name`, `description`, and caveats such as aliased
+  values (`EAGAIN == EWOULDBLOCK`).
+- [ARCHITECTURE.md](ARCHITECTURE.md): how the tables are built.
+- [AGENTS.md](AGENTS.md): repository map and traps.
 
-Header-only, so there is nothing to build for use. To run the smoke test:
+## 🛠️ Building and testing
 
 ```sh
-c++ -std=c++17 -I. test/test.cc -o test/test && ./test/test
-# or with CMake:
 cmake -B build && cmake --build build && ctest --test-dir build
+./build/errno_names_demo
 ```
 
-The test (`test/test.cc`) checks that known errnos resolve to their names, that descriptions are non-empty, and that an out-of-range errno falls back to `"UNKNOWN"`.
+## 🤝 Contributing
 
-## Notes & caveats
+Issues and pull requests are welcome. Read [AGENTS.md](AGENTS.md) first. CI must
+pass on every platform.
 
-- On platforms where two errnos share the same integer value (for example `EAGAIN == EWOULDBLOCK` on Linux, or `ENOTSUP == EOPNOTSUPP` on some systems), `name()` returns whichever symbol is listed *last* in `errnos.h`, since the later assignment overwrites the earlier one when the table is populated.
-- Only errnos that the platform actually defines are compiled in, because each entry in `errnos.h` is guarded by `#ifdef`. The table therefore reflects the build target, not a hardcoded universal list.
-- The table is sized to at least 256 entries, growing if any defined errno value is larger (`error.hh:39`).
-- `description()` strings come from `strerror_r` and so follow the libc's locale at the time the table is first built.
+## 📄 License
 
-## Examples
-
-[`examples/demo.cc`](examples/demo.cc) is a runnable tour. A top-level CMake build
-produces it next to the test:
-
-```sh
-cmake -B build && cmake --build build && ./build/errno_names_demo
-```
-
-It looks up a handful of common errnos (`EAGAIN`, `ENOENT`, `EINVAL`, ...) to
-both their symbolic name and their description, contrasts the stable name against
-the localized `strerror_r` description, then sweeps the integer range and prints
-every errno this platform actually compiled in (value -> name -> description),
-which is the set you get from the `#ifdef`-guarded list in `errnos.h`. It closes
-on the graceful fallback for an unknown value (`"UNKNOWN"` / `"Unknown error"`,
-no throw) and the readable syscall-failure log line the library exists to
-produce, by actually failing an `fopen` and printing `name (description)`.
-
-## Provenance
-
-Extracted from [Xapiand](https://github.com/Kronuz/Xapiand), where it makes I/O error logs readable by printing the errno symbol alongside the description.
-
-## License
-
-MIT. Copyright (c) 2015-2019 Dubalu LLC. See [LICENSE](LICENSE).
+MIT, Copyright (c) 2015-2019 Dubalu LLC. See [LICENSE](LICENSE). Extracted from
+[Xapiand](https://github.com/Kronuz/Xapiand).

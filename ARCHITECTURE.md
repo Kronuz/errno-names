@@ -20,7 +20,7 @@ errno-names is two files and one idea. The idea is to keep a single, canonical l
 
 An X-macro is a list of items expressed as repeated calls to a macro you have not defined yet. The list lives in one place; each *use* of the list redefines the macro to do something specific, includes the list, then undefines the macro. Because the list is textually re-expanded each time, one declaration of the data drives many derived constructs with no risk of them drifting out of sync.
 
-`error.hh` uses the list three times (`error.hh:37`).
+`error.hh` uses the list three times.
 
 First pass, size the tables. The macro turns each symbol into a comparison that tracks the largest errno value seen, evaluated in a `constexpr` lambda so the result is a compile-time constant:
 
@@ -34,7 +34,7 @@ constexpr size_t num_errors = []{
 }();
 ```
 
-After this pass, `num_errors` is large enough to index by any defined errno value, with a floor of 256 (`error.hh:39`).
+After this pass, `num_errors` is large enough to index by any defined errno value, with a floor of 256.
 
 Second pass, fill the names table. Now `__ERRNO` maps each symbol to a string assignment, using the stringizing operator `#name` to turn the token `EAGAIN` into the literal `"EAGAIN"`, indexed by the symbol's integer value:
 
@@ -46,11 +46,11 @@ _names[0] = "UNDEFINED";
 #undef __ERRNO
 ```
 
-The same list, the same symbols, but this expansion writes `_names[EAGAIN] = "EAGAIN";` and so on for every symbol the platform defines (`error.hh:46`).
+The same list, the same symbols, but this expansion writes `_names[EAGAIN] = "EAGAIN";` and so on for every symbol the platform defines.
 
-The descriptions table is filled differently. Rather than a third X-macro pass, the code loops over every index from 0 to `num_errors` and calls `strerror_r(i, ...)`, storing the result (or a `"Unknown error: N"` fallback). The errno list is not needed here because `strerror_r` already maps integers to descriptions; the list's job was to recover the *names*, which the libc does not expose (`error.hh:52`).
+The descriptions table is filled differently. Rather than a third X-macro pass, the code loops over every index from 0 to `num_errors` and calls `strerror_r(i, ...)`, storing the result (or a `"Unknown error: N"` fallback). The errno list is not needed here because `strerror_r` already maps integers to descriptions; the list's job was to recover the *names*, which the libc does not expose.
 
-Both arrays are captured in a `static const auto` initialized by an immediately-invoked lambda, so the whole build happens exactly once, on the first call into `detail::errnos()`, and is reused thereafter (`error.hh:37`).
+Both arrays are captured in a `static const auto` initialized by an immediately-invoked lambda, so the whole build happens exactly once, on the first call into `detail::errnos()`, and is reused thereafter.
 
 ## Why this is portable
 
@@ -58,7 +58,7 @@ Portability falls out of the `#ifdef` guards around every entry in `errnos.h`. O
 
 ## Lookups
 
-`name()` and `description()` are bounds-checked array indexing into the prebuilt arrays (`error.hh:70`, `error.hh:85`). After the one-time build, every lookup is O(1): check range, read the slot, and if the slot is empty return the `"UNKNOWN"` / `"Unknown error"` sentinel. The functions return a reference to a string with static storage duration, so repeated calls do not allocate.
+`name()` and `description()` are bounds-checked array indexing into the prebuilt arrays. After the one-time build, every lookup is O(1): check range, read the slot, and if the slot is empty return the `"UNKNOWN"` / `"Unknown error"` sentinel. The functions return a reference to a string with static storage duration, so repeated calls do not allocate.
 
 ## Design decisions
 
