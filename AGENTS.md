@@ -6,7 +6,7 @@ Guidance for agents (and humans) working in this repo. It is small: two header f
 
 - `error.hh` — the library. Namespace `error`, header-only. Builds the name and description tables lazily and exposes `error::name(int)` and `error::description(int)`.
 - `errnos.h` — the canonical errno list. Pure X-macro list of `#ifdef Exxx __ERRNO(Exxx) #endif` lines. Defines no logic; included multiple times by `error.hh` with different `__ERRNO` definitions.
-- `test/test.cc` — smoke test.
+- `test/test.cc` — smoke test. `test/test_descriptions.cc` — every description equals `std::strerror`'s. `test/test_strerror_variants.cc` — both `strerror_r` forms, with stand-ins.
 - `CMakeLists.txt` — declares the `errno_names` INTERFACE target and the `errno_names_test` test target.
 - `README.md` — what it is, install, quick start; `docs/API.md` — the API reference and caveats; `ARCHITECTURE.md` — the design.
 

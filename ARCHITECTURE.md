@@ -50,6 +50,8 @@ The same list, the same symbols, but this expansion writes `_names[EAGAIN] = "EA
 
 The descriptions table is filled differently. Rather than a third X-macro pass, the code loops over every index from 0 to `num_errors` and calls `strerror_r(i, ...)`, storing the result (or a `"Unknown error: N"` fallback). The errno list is not needed here because `strerror_r` already maps integers to descriptions; the list's job was to recover the *names*, which the libc does not expose.
 
+`strerror_r` has two forms: the XSI one returns an `int` (0 on success) and fills the buffer; the GNU one, which g++ and clang++ select on glibc, returns the text, which need not be in the buffer. `detail::strerror_text` is overloaded on the result type to read either, so the same loop is correct on glibc and on the BSD libc.
+
 Both arrays are captured in a `static const auto` initialized by an immediately-invoked lambda, so the whole build happens exactly once, on the first call into `detail::errnos()`, and is reused thereafter.
 
 ## Why this is portable

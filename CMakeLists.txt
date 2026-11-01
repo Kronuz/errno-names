@@ -14,6 +14,16 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   target_link_libraries(errno_names_test PRIVATE errno_names)
   add_test(NAME errno_names COMMAND errno_names_test)
 
+  # Descriptions equal the libc's text for every slot (fails where strerror_r returns char*).
+  add_executable(errno_names_descriptions test/test_descriptions.cc)
+  target_link_libraries(errno_names_descriptions PRIVATE errno_names)
+  add_test(NAME errno_names_descriptions COMMAND errno_names_descriptions)
+
+  # Both strerror_r variants (XSI int, GNU char*) are read correctly, on any platform.
+  add_executable(errno_names_strerror_variants test/test_strerror_variants.cc)
+  target_link_libraries(errno_names_strerror_variants PRIVATE errno_names)
+  add_test(NAME errno_names_strerror_variants COMMAND errno_names_strerror_variants)
+
   # A runnable tour of the library (not a test): build & run ./build/errno_names_demo
   add_executable(errno_names_demo examples/demo.cc)
   target_link_libraries(errno_names_demo PRIVATE errno_names)

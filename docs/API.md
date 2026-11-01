@@ -12,4 +12,4 @@ Both tables are built once, lazily, on the first call into the library, stored a
 - On platforms where two errnos share the same integer value (for example `EAGAIN == EWOULDBLOCK` on Linux, or `ENOTSUP == EOPNOTSUPP` on some systems), `name()` returns whichever symbol is listed *last* in `errnos.h`, since the later assignment overwrites the earlier one when the table is populated.
 - Only errnos that the platform actually defines are compiled in, because each entry in `errnos.h` is guarded by `#ifdef`. The table therefore reflects the build target, not a hardcoded universal list.
 - The table is sized to at least 256 entries, growing if any defined errno value is larger.
-- `description()` strings come from `strerror_r` and so follow the libc's locale at the time the table is first built.
+- `description()` strings come from `strerror_r`, in either of its forms (the XSI `int` one and glibc's `char*` one), and so follow the libc's locale at the time the table is first built.

@@ -79,9 +79,6 @@ Not for:
   them; the symbol is what this library adds.
 - **Telling aliases apart.** When two symbols share a value
   (`EAGAIN == EWOULDBLOCK`), `name()` returns the one listed last in `errnos.h`.
-- **Descriptions under glibc.** g++ and clang++ on Linux define `_GNU_SOURCE`,
-  which selects glibc's `char*`-returning `strerror_r`; `error.hh` reads that
-  result as a failure, so `description(ENOENT)` is `"Unknown error: 2"` there.
 - **Locale switches.** Descriptions follow the libc locale at the first call and
   do not change afterwards.
 
@@ -91,6 +88,7 @@ Not for:
 - [ARCHITECTURE.md](ARCHITECTURE.md): the X-macro list and how the tables are
   built.
 - [AGENTS.md](AGENTS.md): repository map, adding an errno, and traps.
+- [CHANGELOG.md](CHANGELOG.md): dated changes.
 - [Catalog entry](https://github.com/Kronuz/cpp-libraries/blob/main/AGENTS.md#errno-names)
   in Kronuz C++ Libraries.
 

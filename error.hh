@@ -35,6 +35,24 @@ namespace error {
 
 namespace detail {
 
+// strerror_r has two incompatible forms. The XSI one returns an int (0 on success) and fills the
+// buffer. The GNU one, which g++ and clang++ select on glibc, returns the text, which need not be
+// in the buffer. The overloads on the result type pick the reading that matches.
+inline const char* strerror_text(int result, const char* buffer) { return result == 0 ? buffer : nullptr; }
+inline const char* strerror_text(const char* result, const char*) { return result; }
+
+// The description of `errnum` from `call(errnum, buffer, size)`, a strerror_r of either form.
+template <class StrerrorR>
+inline std::string describe_with(StrerrorR&& call, int errnum) {
+	char buffer[100];
+	const char* text = strerror_text(call(errnum, buffer, sizeof(buffer)), buffer);
+	if (text != nullptr) {
+		return text;
+	}
+	snprintf(buffer, sizeof(buffer), "Unknown error: %d", errnum);
+	return buffer;
+}
+
 inline const auto& errnos() {
 	static const auto _errnos = []{
 		constexpr size_t num_errors = []{
@@ -51,14 +69,9 @@ inline const auto& errnos() {
 		#include "errnos.h"
 		#undef __ERRNO
 		for (size_t i = 0; i < num_errors; ++i) {
-			char description[100];
-			int errnum = static_cast<int>(i);
-			if (strerror_r(errnum, description, sizeof(description)) == 0) {
-				_descriptions[i] = description;
-			} else {
-				snprintf(description, sizeof(description), "Unknown error: %d", errnum);
-				_descriptions[i] = description;
-			}
+			_descriptions[i] = describe_with([](int errnum, char* buffer, std::size_t size) {
+				return strerror_r(errnum, buffer, size);
+			}, static_cast<int>(i));
 		}
 		return std::make_pair(_names, _descriptions);
 	}();
