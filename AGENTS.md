@@ -10,15 +10,47 @@ Guidance for agents (and humans) working in this repo. It is small: two header f
 - `CMakeLists.txt` — declares the `errno_names` INTERFACE target and the `errno_names_test` test target.
 - `README.md` — what it is, install, quick start; `docs/API.md` — the API reference and caveats; `ARCHITECTURE.md` — the design.
 
-## Build & run the test
+## Verification and benchmarks
+
+The shared method is the catalog's
+[PERFORMANCE.md](https://github.com/Kronuz/cpp-libraries/blob/main/docs/PERFORMANCE.md). From a
+fresh clone:
 
 ```sh
-c++ -std=c++17 -I. test/test.cc -o test/test && ./test/test
-# or:
-cmake -B build && cmake --build build && ctest --test-dir build
+cmake -B build && cmake --build build && ctest --test-dir build --output-on-failure
 ```
 
-A passing run prints `errno-names OK: EINVAL = EINVAL (Invalid argument)`.
+- **Tests.** `errno_names` (`test/test.cc`) is the smoke test; a passing run prints
+  `errno-names OK: EINVAL = EINVAL (Invalid argument)`. Its checks are `assert`s, so leave `NDEBUG`
+  off (no build type, or Debug); the other two `#undef NDEBUG`. `errno_names_descriptions` is the
+  oracle test: `description(e)` equals libc's `std::strerror(e)` for every slot, 0 to 255, plus
+  four known texts. `errno_names_strerror_variants` feeds `detail::describe_with` stand-ins for the
+  XSI `int` and the GNU `char*` forms of `strerror_r` (status, static text, text in the buffer,
+  null), so both readings run on every platform.
+- **Revert check.** The glibc fix (`0ec0801`, CHANGELOG 2026-11-01) shows on Linux: with the old
+  header, `errno_names_descriptions` fails at slot 0 (`Unknown error: 0` against `Success`). The
+  stand-in test needs the new header, so build the oracle test alone:
+
+  ```sh
+  git show 0ec0801^:error.hh > error.hh
+  cmake --build build --target errno_names_descriptions && ./build/errno_names_descriptions; git checkout error.hh
+  ```
+
+- **CI.** `.github/workflows/ci.yml` calls the catalog's shared
+  [`cmake.yml`](https://github.com/Kronuz/cpp-libraries/blob/main/.github/workflows/cmake.yml):
+  Linux x86_64 (GCC, Clang) and arm64 (GCC) on glibc, macOS arm64 and x86_64, and FreeBSD, at
+  `-O2 -g` with asserts live, plus ASan+UBSan and TSan jobs over the same tests. The ASan+UBSan
+  job, on Linux:
+
+  ```sh
+  CC=clang CXX=clang++ cmake -B build-asan -DCMAKE_BUILD_TYPE=Debug \
+    "-DCMAKE_CXX_FLAGS=-fsanitize=address,undefined -fno-sanitize-recover=undefined -fno-omit-frame-pointer -D_GLIBCXX_ASSERTIONS" \
+    -DCMAKE_EXE_LINKER_FLAGS=-fsanitize=address,undefined
+  cmake --build build-asan && ASAN_OPTIONS=detect_leaks=1 ctest --test-dir build-asan --output-on-failure
+  ```
+
+- **Not here.** No differential test, mutation script, fuzz target or benchmark; the README's
+  "O(1) lookups" is an index into a table built on first use.
 
 ## Conventions
 
