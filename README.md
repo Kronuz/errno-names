@@ -84,6 +84,8 @@ Not for:
 
 ## 📚 Documentation
 
+- [The Bag of Holding](https://kronuz.github.io/blog/bag-of-holding/):
+  the Familiars post that covers `errno-names` among the small helpers.
 - [docs/API.md](docs/API.md): `name`, `description`, and their fallbacks.
 - [ARCHITECTURE.md](ARCHITECTURE.md): the X-macro list and how the tables are
   built.
